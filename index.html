@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Social Platform - PHP Backend</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .auth-form {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .auth-form h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #667eea;
+            font-size: 2em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #667eea;
+            border: 2px solid #667eea;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .main-app {
+            display: none;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 20px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            color: #667eea;
+            font-size: 1.8em;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 5px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 12px 20px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .chat-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(10px);
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #e1e5e9;
+            border-radius: 10px;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .message.own {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.other {
+            background: #f8f9fa;
+            border: 1px solid #e1e5e9;
+        }
+
+        .message-header {
+            font-size: 0.8em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+        }
+
+        .chat-input button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .dm-container {
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+            height: 500px;
+        }
+
+        .dm-users {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            overflow-y: auto;
+        }
+
+        .dm-users h3 {
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .user-item {
+            padding: 10px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .user-item:hover {
+            background: #f8f9fa;
+        }
+
+        .user-item.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .user-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #28a745;
+        }
+
+        .user-status.offline {
+            background: #6c757d;
+        }
+
+        .dm-chat {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .calendar-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #667eea;
+            padding: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .calendar-nav:hover {
+            background: #f8f9fa;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: #e1e5e9;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .calendar-day {
+            background: white;
+            padding: 15px 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .calendar-day:hover {
+            background: #f8f9fa;
+        }
+
+        .calendar-day.today {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .calendar-day.other-month {
+            color: #ccc;
+        }
+
+        .event {
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            margin-top: 2px;
+            cursor: pointer;
+        }
+
+        .error {
+            color: #ff4757;
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .success {
+            color: #28a745;
+            font-size: 0.9em;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 15px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            font-weight: 500;
+            z-index: 1000;
+        }
+
+        .connection-status.connected {
+            background: #28a745;
+            color: white;
+        }
+
+        .connection-status.disconnected {
+            background: #dc3545;
+            color: white;
+        }
+
+        .connection-status.connecting {
+            background: #ffc107;
+            color: #333;
+        }
+
+        @media (max-width: 768px) {
+            .dm-container {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .calendar-grid {
+                font-size: 0.9em;
+            }
+
+            .calendar-day {
+                padding: 10px 5px;
+                min-height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Connection Status -->
+    <div id="connection-status" class="connection-status connecting">Connecting...</div>
+
+    <!-- Login/Register Form -->
+    <div id="auth-section" class="auth-container">
+        <form id="auth-form" class="auth-form">
+            <h2 id="auth-title">Welcome Back</h2>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group" id="email-group" style="display: none;">
+                <label for="email">Email (optional)</label>
+                <input type="email" id="email" name="email">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div id="auth-message" class="error"></div>
+            <button type="submit" class="btn btn-primary" id="auth-submit">Sign In</button>
+            <button type="button" class="btn btn-secondary" id="auth-toggle">Don't have an account? Sign Up</button>
+        </form>
+    </div>
+
+    <!-- Main Application -->
+    <div id="main-app" class="main-app">
+        <div class="container">
+            <header class="header">
+                <h1>Social Platform</h1>
+                <div class="user-info">
+                    <div class="user-avatar" id="user-avatar">U</div>
+                    <span id="current-user">User</span>
+                    <button class="btn btn-secondary" id="logout-btn" style="width: auto; padding: 8px 16px;">Logout</button>
+                </div>
+            </header>
+
+            <nav class="nav-tabs">
+                <button class="nav-tab active" data-tab="chat">Chat Room</button>
+                <button class="nav-tab" data-tab="dm">Direct Messages</button>
+                <button class="nav-tab" data-tab="calendar">Calendar</button>
+            </nav>
+
+            <!-- Chat Room Tab -->
+            <div id="chat-tab" class="tab-content active">
+                <div class="chat-container">
+                    <div id="chat-messages" class="chat-messages"></div>
+                    <div class="chat-input">
+                        <input type="text" id="message-input" placeholder="Type your message...">
+                        <button id="send-btn">Send</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direct Messages Tab -->
+            <div id="dm-tab" class="tab-content">
+                <div class="dm-container">
+                    <div class="dm-users">
+                        <h3>Users</h3>
+                        <div id="user-list"></div>
+                    </div>
+                    <div class="dm-chat">
+                        <div id="dm-messages" class="chat-messages"></div>
+                        <div class="chat-input">
+                            <input type="text" id="dm-input" placeholder="Select a user to chat...">
+                            <button id="dm-send-btn">Send</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Calendar Tab -->
+            <div id="calendar-tab" class="tab-content">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button class="calendar-nav" id="prev-month">‹</button>
+                        <h2 id="calendar-title">January 2024</h2>
+                        <button class="calendar-nav" id="next-month">›</button>
+                    </div>
+                    <div class="calendar-grid" id="calendar-grid"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Application State
+        let currentUser = null;
+        let currentUserId = null;
+        let authToken = null;
+        let isLoginMode = true;
+        let selectedUser = null;
+        let selectedUserId = null;
+        let currentDate = new Date();
+        let eventSource = null;
+        let lastChatMessageId = 0;
+        let lastDirectMessageId = 0;
+
+        // API Base URL - adjust this based on your server setup
+        const API_BASE = window.location.origin;
+
+        // Data storage
+        let users = [];
+        let onlineUsers = new Set();
+        let events = {};
+
+        // DOM Elements
+        const authSection = document.getElementById('auth-section');
+        const mainApp = document.getElementById('main-app');
+        const authForm = document.getElementById('auth-form');
+        const authTitle = document.getElementById('auth-title');
+        const authSubmit = document.getElementById('auth-submit');
+        const authToggle = document.getElementById('auth-toggle');
+        const emailGroup = document.getElementById('email-group');
+        const authMessage = document.getElementById('auth-message');
+        const currentUserSpan = document.getElementById('current-user');
+        const userAvatar = document.getElementById('user-avatar');
+        const connectionStatus = document.getElementById('connection-status');
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            generateCalendar();
+            
+            // Check if user is already logged in
+            authToken = localStorage.getItem('authToken');
+            if (authToken) {
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                if (userData.username) {
+                    currentUser = userData.username;
+                    currentUserId = userData.id;
+                    showMainApp();
+                } else {
+                    clearAuth();
+                }
+            } else {
+                updateConnectionStatus('disconnected', 'Not connected');
+            }
+        });
+
+        function setupEventListeners() {
+            // Auth form
+            authForm.addEventListener('submit', handleAuth);
+            authToggle.addEventListener('click', toggleAuthMode);
+            document.getElementById('logout-btn').addEventListener('click', logout);
+
+            // Navigation tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+            });
+
+            // Chat functionality
+            document.getElementById('send-btn').addEventListener('click', sendMessage);
+            document.getElementById('message-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendMessage();
+            });
+
+            // DM functionality
+            document.getElementById('dm-send-btn').addEventListener('click', sendDirectMessage);
+            document.getElementById('dm-input').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendDirectMessage();
+            });
+
+            // Calendar navigation
+            document.getElementById('prev-month').addEventListener('click', () => navigateMonth(-1));
+            document.getElementById('next-month').addEventListener('click', () => navigateMonth(1));
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            const email = document.getElementById('email').value.trim();
+
+            if (!username || !password) {
+                showMessage('Please fill in all required fields', 'error');
+                return;
+            }
+
+            const action = isLoginMode ? 'login' : 'register';
+            const payload = { username, password };
+            if (!isLoginMode && email) payload.email = email;
+
+            try {
+                const response = await fetch(`${API_BASE}/auth.php?action=${action}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    authToken = data.token;
+                    currentUser = data.user.username;
+                    currentUserId = data.user.id;
+                    
+                    localStorage.setItem('authToken', authToken);
+                    localStorage.setItem('userData', JSON.stringify(data.user));
+                    
+                    showMainApp();
+                    showMessage(data.message, 'success');
+                } else {
+                    showMessage(data.error || 'Authentication failed', 'error');
+                }
+            } catch (error) {
+                showMessage('Network error. Please try again.', 'error');
+            }
+        }
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            authTitle.textContent = isLoginMode ? 'Welcome Back' : 'Join Us';
+            authSubmit.textContent = isLoginMode ? 'Sign In' : 'Sign Up';
+            authToggle.textContent = isLoginMode ? "Don't have an account? Sign Up" : "Already have an account? Sign In";
+            emailGroup.style.display = isLoginMode ? 'none' : 'block';
+            authMessage.textContent = '';
+        }
+
+        function showMessage(message, type) {
+            authMessage.textContent = message;
+            authMessage.className = type;
+        }
+
+        function showMainApp() {
+            authSection.style.display = 'none';
+            mainApp.style.display = 'block';
+            currentUserSpan.textContent = currentUser;
+            userAvatar.textContent = currentUser.charAt(0).toUpperCase();
+            
+            // Initialize real-time connection
+            initializeRealtime();
+            
+            // Load initial data
+            loadChatMessages();
+            loadUserList();
+            loadEvents();
+        }
+
+        function initializeRealtime() {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            updateConnectionStatus('connecting', 'Connecting...');
+            
+            const url = `${API_BASE}/realtime.php?last_chat_id=${lastChatMessageId}&last_direct_id=${lastDirectMessageId}`;
+            eventSource = new EventSource(url, {
+                headers: { 'Authorization': `Bearer ${authToken}` }
+            });
+
+            eventSource.onopen = function() {
+                updateConnectionStatus('connected', 'Connected');
+            };
+
+            eventSource.onerror = function() {
+                updateConnectionStatus('disconnected', 'Connection lost');
+                // Attempt to reconnect after 5 seconds
+                setTimeout(() => {
+                    if (authToken) initializeRealtime();
+                }, 5000);
+            };
+
+            eventSource.addEventListener('connected', function(e) {
+                const data = JSON.parse(e.data);
+                console.log('Connected as:', data.username);
+            });
+
+            eventSource.addEventListener('chat_message', function(e) {
+                const message = JSON.parse(e.data);
+                displayMessage({
+                    user: message.username,
+                    message: message.message,
+                    timestamp: message.timestamp,
+                    user_id: message.user_id
+                }, 'chat-messages');
+                lastChatMessageId = Math.max(lastChatMessageId, message.id);
+            });
+
+            eventSource.addEventListener('direct_message', function(e) {
+                const message = JSON.parse(e.data);
+                if (selectedUserId === message.sender_id) {
+                    displayMessage({
+                        user: message.sender_username,
+                        message: message.message,
+                        timestamp: message.timestamp,
+                        user_id: message.sender_id
+                    }, 'dm-messages');
+                }
+                lastDirectMessageId = Math.max(lastDirectMessageId, message.id);
+            });
+
+            eventSource.addEventListener('user_status', function(e) {
+                const data = JSON.parse(e.data);
+                updateUserStatus(data.online_users);
+            });
+
+            eventSource.addEventListener('heartbeat', function(e) {
+                // Keep connection alive
+                updateConnectionStatus('connected', 'Connected');
+            });
+        }
+
+        function updateConnectionStatus(status, text) {
+            connectionStatus.className = `connection-status ${status}`;
+            connectionStatus.textContent = text;
+        }
+
+        function updateUserStatus(onlineUsersList) {
+            onlineUsers.clear();
+            onlineUsersList.forEach(user => onlineUsers.add(user.id));
+            
+            // Update user list UI
+            document.querySelectorAll('.user-item').forEach(item => {
+                const userId = parseInt(item.dataset.userId);
+                const statusIndicator = item.querySelector('.user-status');
+                if (statusIndicator) {
+                    statusIndicator.className = onlineUsers.has(userId) ? 'user-status' : 'user-status offline';
+                }
+            });
+        }
+
+        function logout() {
+            clearAuth();
+            if (eventSource) {
+                eventSource.close();
+                eventSource = null;
+            }
+            updateConnectionStatus('disconnected', 'Not connected');
+        }
+
+        function clearAuth() {
+            currentUser = null;
+            currentUserId = null;
+            authToken = null;
+            
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            
+            authSection.style.display = 'flex';
+            mainApp.style.display = 'none';
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('email').value = '';
+            authMessage.textContent = '';
+            
+            // Clear UI
+            document.getElementById('chat-messages').innerHTML = '';
+            document.getElementById('dm-messages').innerHTML = '';
+            document.getElementById('user-list').innerHTML = '';
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(`${tabName}-tab`).classList.add('active');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const message = input.value.trim();
+            
+            if (!message || !authToken) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/messages.php?type=chat`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ message })
+                });
+
+                if (response.ok) {
+                    input.value = '';
+                } else {
+                    const error = await response.json();
+                    console.error('Error sending message:', error.error);
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+            }
+        }
+
+        async function sendDirectMessage() {
+            if (!selectedUserId || !authToken) return;
+            
+            const input = document.getElementById('dm-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/messages.php?type=direct`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        recipient_id: selectedUserId,
+                        message
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    displayMessage({
+                        user: data.message.sender_username,
+                        message: data.message.message,
+                        timestamp: data.message.timestamp,
+                        user_id: data.message.sender_id
+                    }, 'dm-messages');
+                    input.value = '';
+                } else {
+                    const error = await response.json();
+                    console.error('Error sending direct message:', error.error);
+                }
+            } catch (error) {
+                console.error('Network error:', error);
+            }
+        }
+
+        function displayMessage(messageObj, containerId) {
+            const container = document.getElementById(containerId);
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${messageObj.user_id == currentUserId ? 'own' : 'other'}`;
+            
+            const time = new Date(messageObj.timestamp).toLocaleTimeString();
+            messageDiv.innerHTML = `
+                <div class="message-header">${messageObj.user} • ${time}</div>
+                <div>${messageObj.message}</div>
+            `;
